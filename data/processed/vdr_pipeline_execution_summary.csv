@@ -1,0 +1,5 @@
+Step,Input_File,Output_Files,Runtime_sec,Key_Metric
+Step 1: Curation,data/raw/VDR.csv,vdr_curated_library.csv; vdr_curated_library.sdf,1.55,568 Unique Compounds
+Step 2: Physicochemical,data/processed/vdr_curated_library.csv,vdr_descriptors_full.csv; vdr_descriptors_filtered.csv; vdr_druglikeness_np.csv,7.02,125 Retained Features
+Step 3: Fingerprints & Clusters,data/processed/vdr_curated_library.csv,vdr_fingerprint_evaluation.csv; vdr_fingerprint_redundancy.csv; vdr_butina_clusters.csv; vdr_cluster_stability.csv; vdr_scaffold_assignments.csv; vdr_scaffold_summary.csv,20.97,12 FP Panel Evaluated
+Step 4: Chemical Space,Processed Data (Steps 1-3),vdr_chemical_space_coordinates.csv; vdr_pca_variance.csv; vdr_descriptor_spearman_matrix.csv; vdr_kruskal_wallis_results.csv; dunn_posthoc_matrices/*.csv; data/figures/*.png,8.47,PCA/t-SNE/UMAP + Stats
