@@ -10,6 +10,7 @@ from algorithms.fingerprint_generator import FingerprintGenerator
 from algorithms.fingerprint_evaluator import FingerprintEvaluator
 from algorithms.butina_clustering import ButinaClusterer, ClusterStabilityAnalyzer
 from algorithms.scaffold_analysis import ScaffoldAnalyzer
+from algorithms.visualization_clustering import plot_clustering_visualizations
 
 
 def run_clustering_step(
@@ -111,6 +112,12 @@ def run_clustering_step(
     print(f"Unique Generic Frameworks:       {scaffold_stats['unique_generic_frameworks']}")
     print(f"Scaffold Diversity Ratio:        {scaffold_stats['bm_scaffold_diversity_ratio']:.3f}")
     print("=" * 55)
+    print("\nGenerating Step 3 visualizations...")
+    plot_clustering_visualizations(
+        redundancy_csv=out_fp_redundancy_path,
+        scaffolds_csv=out_scaffolds_path,
+        clusters_csv=out_clusters_path
+    )
 
 
 if __name__ == "__main__":

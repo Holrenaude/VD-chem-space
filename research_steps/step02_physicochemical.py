@@ -13,6 +13,7 @@ import pandas as pd
 from algorithms.rdkit_descriptors import RDKitDescriptorEngine
 from algorithms.descriptor_filtering import DescriptorFilter
 from algorithms.drug_likeness_np import DrugLikenessProfiler
+from algorithms.visualization_druglikeness import plot_druglikeness_histograms
 
 
 def run_physicochemical_step(
@@ -76,6 +77,13 @@ def run_physicochemical_step(
     print(f"Mean NP-Likeness Score:          {druglikeness_df['NP_Score'].mean():.3f}")
     print("=" * 55)
 
+    print("Generating property distribution histograms...")
+    plot_druglikeness_histograms(
+        druglikeness_csv=out_druglikeness_path,
+        curated_csv=input_csv_path
+    )
 
 if __name__ == "__main__":
     run_physicochemical_step()
+
+
