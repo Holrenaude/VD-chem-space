@@ -1,0 +1,38 @@
+======================================================================
+  VALIDATION & REDISCOVERY BENCHMARK REPORT: REINVENT4_TL_v1
+======================================================================
+  Generated CSV                 : data/generated_csv/reinvent4_tl_v1.csv
+  Total Sampled                 : 980
+  Valid & Unique (2D)           : 980
+  Validity (%)                  : 100.0%
+  Uniqueness (%)                : 100.0%
+  Novelty (%)                   : 98.27%
+  Internal Diversity            : 0.838
+  Mean NN Tanimoto to VDR       : 0.423
+----------------------------------------------------------------------
+  SCAFFOLD, REGENERATION & REDISCOVERY METRICS
+----------------------------------------------------------------------
+  Unique Murcko Scaffolds       : 539
+  Novel Murcko Scaffolds        : 523
+  Train Set Recall (%)          : 5.21%
+  Held-Out Test Hits (2D)       : 0 / 85
+  Exact Regeneration 2D (%)     : 0.0%
+  Exact Regen Stereo (%)        : 0.0%
+  GuacaMol Rediscovery Score    : 0.559
+  Secosteroid Regen 2D (%)      : 0.0%  (0/37)
+  Aromatic Non-Seco Regen (%)   : 0.0%  (0/48)
+  Analogue Recovery (>=0.70)    : 24.71%
+  Analogue Recovery (>=0.85)    : 0.0%
+  Top-100 / Top-500 Ref Hits    : 13 / 17
+----------------------------------------------------------------------
+  MEDICINAL CHEMISTRY & AROMATICITY ALIGNMENT
+----------------------------------------------------------------------
+  Alert-Free (PAINS/Brenk/NIH)  : 44.39%  (Ref VDR: 52.8%)
+  PAINS-Free Pass Rate          : 99.08%
+  Brenk-Free Pass Rate          : 45.41%
+  Molecules w/ Aromatic Bonds   : 27.04%  (Ref VDR: 27.74%)
+  Mean Aromatic Bonds / Mol     : 2.82  (Ref VDR: 3.51)
+----------------------------------------------------------------------
+  Diagnostic Plot               : data/figures/reinvent4_tl_v1_validation.png
+  Rediscovered Hits CSV         : None
+======================================================================

@@ -1,0 +1,13 @@
+run_type = "transfer_learning"
+device = "cuda:0"
+tb_logdir = "ML_generation/reinvent4/tl_v1/tb_logs"
+
+[parameters]
+num_epochs = 10
+save_every_n_epochs = 2
+batch_size = 64
+sample_batch_size = 128
+input_model_file = "ML_generation/reinvent4/priors/base.prior"
+output_model_file = "ML_generation/reinvent4/tl_v1/vdr_focused.prior"
+smiles_file = "data/processed/vdr_train.smi"
+validation_smiles_file = ""

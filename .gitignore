@@ -18,3 +18,10 @@ __pycache__/
 .idea/
 .DS_Store
 Thumbs.db
+
+# External cloned repositories & large model weights/logs
+REINVENT4/
+*.ckpt
+*.prior
+*.agent
+*.log

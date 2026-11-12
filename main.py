@@ -9,12 +9,15 @@ import os
 import sys
 import time
 import datetime
+import subprocess
 import pandas as pd
 
 from research_steps.step01_data_curation import run_curation_pipeline
 from research_steps.step02_physicochemical import run_physicochemical_step
 from research_steps.step03_clustering import run_clustering_step
 from research_steps.step04_chemical_space import execute_step04
+from ML_generation.validate_generation import validate_model
+from ML_generation.prepare_splits import create_scaffold_split
 
 
 def setup_environment():
@@ -64,25 +67,32 @@ def print_pipeline_summary_table(pipeline_summary: list):
     print("=" * 115)
 
 
-def get_user_choice() -> int:
-    """Prompts the user to select pipeline execution mode."""
-    print("\nSelect an action to execute:")
-    print("  [0] Run ENTIRE Pipeline (Steps 1 through 4)")
-    print("  [1] Run Step 1: Data Curation & Standardisation")
-    print("  [2] Run Step 2: Physicochemical Profiling & Filtering")
-    print("  [3] Run Step 3: Fingerprints, Similarity & Clustering")
-    print("  [4] Run Step 4: Chemical Space Visualisation & Correlation Analysis")
+def export_execution_log(pipeline_summary: list, pipeline_summary_path: str):
+    """Appends execution records to the summary CSV."""
+    export_records = []
+    for row in pipeline_summary:
+        file_list = row["Output_Files"]
+        file_str = "; ".join(file_list) if isinstance(file_list, list) else str(file_list)
+        export_records.append({
+            "Step": row["Step"],
+            "Input_File": row["Input_File"],
+            "Output_Files": file_str,
+            "Runtime_sec": row["Runtime_sec"],
+            "Key_Metric": row["Key_Metric"]
+        })
     
-    while True:
-        try:
-            choice = input("\nEnter choice [0-4]: ").strip()
-            if choice in ["0", "1", "2", "3", "4"]:
-                return int(choice)
-            print("[Warning] Invalid selection. Please enter a number between 0 and 4.")
-        except KeyboardInterrupt:
-            print("\n[INFO] Execution cancelled by user.")
-            sys.exit(0)
+    # Save log (appending if file exists, or creating fresh)
+    df = pd.DataFrame(export_records)
+    if os.path.exists(pipeline_summary_path):
+        df.to_csv(pipeline_summary_path, mode='a', header=False, index=False)
+    else:
+        df.to_csv(pipeline_summary_path, index=False)
+    print(f"\nSaved execution summary log: {pipeline_summary_path}\n")
 
+
+# =============================================================================
+# EXECUTOR FUNCTIONS (ORIGINAL DATASET)
+# =============================================================================
 
 def execute_step_1(raw_csv, curated_csv, curated_sdf) -> dict:
     print("\n>>> Executing Step 1: Data Curation & Standardisation...")
@@ -100,8 +110,7 @@ def execute_step_1(raw_csv, curated_csv, curated_sdf) -> dict:
         }
     except Exception as e:
         print(f"\n[Error] Step 1 failed: {e}")
-        sys.exit(1)
-
+        return None
 
 def execute_step_2(curated_csv) -> dict:
     print("\n>>> Executing Step 2: Physicochemical Profiling & Filtering...")
@@ -123,8 +132,7 @@ def execute_step_2(curated_csv) -> dict:
         }
     except Exception as e:
         print(f"\n[Error] Step 2 failed: {e}")
-        sys.exit(1)
-
+        return None
 
 def execute_step_3(curated_csv) -> dict:
     print("\n>>> Executing Step 3: Fingerprints, Similarity & Clustering...")
@@ -149,8 +157,7 @@ def execute_step_3(curated_csv) -> dict:
         }
     except Exception as e:
         print(f"\n[Error] Step 3 failed: {e}")
-        sys.exit(1)
-
+        return None
 
 def execute_step_4() -> dict:
     print("\n>>> Executing Step 4: Chemical Space Visualisation & Correlation Analysis...")
@@ -175,14 +182,199 @@ def execute_step_4() -> dict:
         }
     except Exception as e:
         print(f"\n[Error] Step 4 failed: {e}")
-        sys.exit(1)
+        return None
+
+
+# =============================================================================
+# EXECUTOR FUNCTIONS (ML GENERATION)
+# =============================================================================
+
+def execute_ml_generation(model_name: str, script_path: str, output_csv: str) -> dict:
+    """Executes a Bash pipeline script for ML molecule generation."""
+    print(f"\n>>> Executing Generation for {model_name}...")
+    start_time = time.time()
+    
+    if not os.path.exists(script_path):
+        print(f"\n[Error] Bash script not found: {script_path}")
+        return None
+        
+    try:
+        # Run the bash script natively. Since run_pipeline.sh has 'conda run',
+        # it will handle environment contexts dynamically.
+        subprocess.run(["bash", script_path], check=True)
+        
+        elapsed = time.time() - start_time
+        print(f"[Success] {model_name} generation completed.")
+        return {
+            "Step": f"ML: {model_name} Generation",
+            "Input_File": "Prior Model + Configs",
+            "Output_Files": [output_csv],
+            "Runtime_sec": round(elapsed, 2),
+            "Key_Metric": "Sampling Executed"
+        }
+    except subprocess.CalledProcessError as e:
+        print(f"\n[Error] ML Generation failed with error code: {e.returncode}")
+        return None
+
+
+# =============================================================================
+# MENUS
+# =============================================================================
+
+def menu_original_dataset(raw_csv, curated_csv, curated_sdf, pipeline_summary_path):
+    while True:
+        print("\n" + "-" * 40)
+        print("  1) ORIGINAL DATASET PIPELINE")
+        print("-" * 40)
+        print("  [1] Run Step 1: Data Curation & Standardisation")
+        print("  [2] Run Step 2: Physicochemical Profiling & Filtering")
+        print("  [3] Run Step 3: Fingerprints, Similarity & Clustering")
+        print("  [4] Run Step 4: Chemical Space Visualisation & Correlation Analysis")
+        print("  [5] Run ENTIRE Pipeline (Steps 1 through 4)")
+        print("  [0] Go back")
+        
+        choice = input("\nEnter choice [0-5]: ").strip()
+        pipeline_summary = []
+        
+        if choice == "1":
+            res = execute_step_1(raw_csv, curated_csv, curated_sdf)
+            if res: pipeline_summary.append(res)
+        elif choice == "2":
+            res = execute_step_2(curated_csv)
+            if res: pipeline_summary.append(res)
+        elif choice == "3":
+            res = execute_step_3(curated_csv)
+            if res: pipeline_summary.append(res)
+        elif choice == "4":
+            res = execute_step_4()
+            if res: pipeline_summary.append(res)
+        elif choice == "5":
+            r1 = execute_step_1(raw_csv, curated_csv, curated_sdf)
+            if r1: pipeline_summary.append(r1)
+            r2 = execute_step_2(curated_csv)
+            if r2: pipeline_summary.append(r2)
+            r3 = execute_step_3(curated_csv)
+            if r3: pipeline_summary.append(r3)
+            r4 = execute_step_4()
+            if r4: pipeline_summary.append(r4)
+        elif choice == "0":
+            break
+        else:
+            print("[Warning] Invalid selection.")
+            continue
+            
+        if pipeline_summary:
+            print_pipeline_summary_table(pipeline_summary)
+            export_execution_log(pipeline_summary, pipeline_summary_path)
+
+
+def menu_reinvent(pipeline_summary_path):
+    while True:
+        print("\n" + "-" * 40)
+        print("  2.1) MODEL: REINVENT 4")
+        print("-" * 40)
+        print("  [1] Generate (Run TL & Sampling Pipeline)")
+        print("  [2] Validate (Benchmark Metrics)")
+        print("  [0] Go back")
+        
+        choice = input("\nEnter choice [0-2]: ").strip()
+        pipeline_summary = []
+        
+        if choice == "1":
+            res = execute_ml_generation(
+                model_name="REINVENT4",
+                script_path="ML_generation/reinvent4/run_pipeline.sh",
+                output_csv="data/generated_csv/reinvent4_tl_v1.csv"
+            )
+            if res: pipeline_summary.append(res)
+        elif choice == "2":
+            print("\n>>> Executing Validation for REINVENT 4...")
+            start_time = time.time()
+            try:
+                train_file = (
+                    "data/processed/vdr_train.smi"
+                    if os.path.exists("data/processed/vdr_train.smi")
+                    else "data/processed/vdr_binders.smi"
+                )
+                metrics = validate_model(
+                    model_name="REINVENT4_TL_v1",
+                    generated_csv="data/generated_csv/reinvent4_tl_v1.csv",
+                    train_smi=train_file,
+                    test_smi="data/processed/vdr_test_holdout.smi",
+                )
+                elapsed = time.time() - start_time
+                pipeline_summary.append({
+                    "Step": "ML: REINVENT4 Validation",
+                    "Input_File": "data/generated_csv/reinvent4_tl_v1.csv",
+                    "Output_Files": [
+                        "data/processed/ml_generation_benchmarks.csv",
+                        "data/reports/reinvent4_tl_v1_validation.txt",
+                        "data/figures/reinvent4_tl_v1_validation.png",
+                    ],
+                    "Runtime_sec": round(elapsed, 2),
+                    "Key_Metric": f"Regen: {metrics['Exact_Regen_2D_%']}% | GuacaMol: {metrics['GuacaMol_Rediscovery_Score']} | AlertFree: {metrics['Alert_Free_%']}%",
+                })
+            except Exception as e:
+                print(f"\n[Error] Validation failed: {e}")
+        elif choice == "0":
+            break
+        else:
+            print("[Warning] Invalid selection.")
+            
+        if pipeline_summary:
+            print_pipeline_summary_table(pipeline_summary)
+            export_execution_log(pipeline_summary, pipeline_summary_path)
+
+
+def menu_ml_generation(pipeline_summary_path: str):
+    """Tier 2 Menu: De Novo Molecule Generation & Benchmarking."""
+    # Automatically ensure the 80/20 scaffold split exists before any model runs
+    if not os.path.exists("data/processed/vdr_train.smi") or not os.path.exists("data/processed/vdr_test_holdout.smi"):
+        print("\n[Info] Generating reproducible 80/20 scaffold-aware train/test splits...")
+        create_scaffold_split()
+
+    while True:
+        print("\n" + "=" * 60)
+        print("            ML GENERATION & MODEL BENCHMARKING")
+        print("=" * 60)
+        print("  [0] Prepare / Refresh 80/20 Scaffold Train-Test Split")
+        print("  [1] REINVENT 4 (Transfer Learning & Sampling)")
+        print("  [b] Back to Main Menu")
+        print("=" * 60)
+
+        choice = input("Select a generative model [0-3, b]: ").strip().lower()
+
+        if choice == "0":
+            print("\n>>> Generating 80/20 Scaffold-Aware Train/Test Splits...")
+            start_time = time.time()
+            try:
+                create_scaffold_split()
+                elapsed = time.time() - start_time
+                pipeline_summary.append({
+                    "Step": "ML: Scaffold Train/Test Split",
+                    "Input_File": "data/processed/vdr_curated_library.csv",
+                    "Output_Files": [
+                        "data/processed/vdr_train.smi",
+                        "data/processed/vdr_test_holdout.smi",
+                    ],
+                    "Runtime_sec": round(elapsed, 2),
+                    "Key_Metric": "80/20 Murcko Scaffold Split (Seed=42)",
+                })
+            except Exception as e:
+                print(f"\n[Error] Split generation failed: {e}")
+        elif choice == "1":
+            menu_reinvent(pipeline_summary_path)
+        elif choice == "2":
+            print("\n[Info] Transmol module is queued for integration.")
+        elif choice == "3":
+            print("\n[Info] Additional generator modules are queued for integration.")
+        elif choice == "b":
+            break
+        else:
+            print("Invalid selection. Please enter 0-3 or b.")
 
 
 def main():
-    print("=" * 70)
-    print("   VDR CHEMICAL SPACE PROFILING: PIPELINE ORCHESTRATOR")
-    print("=" * 70)
-
     setup_environment()
 
     raw_csv = "data/raw/VDR.csv"
@@ -194,43 +386,25 @@ def main():
         print(f"\n[Error] Target dataset not found at '{raw_csv}'.")
         sys.exit(1)
 
-    choice = get_user_choice()
-    pipeline_summary = []
-
-    # Execute selected logic
-    if choice == 0:
-        pipeline_summary.append(execute_step_1(raw_csv, curated_csv, curated_sdf))
-        pipeline_summary.append(execute_step_2(curated_csv))
-        pipeline_summary.append(execute_step_3(curated_csv))
-        pipeline_summary.append(execute_step_4())
-    elif choice == 1:
-        pipeline_summary.append(execute_step_1(raw_csv, curated_csv, curated_sdf))
-    elif choice == 2:
-        pipeline_summary.append(execute_step_2(curated_csv))
-    elif choice == 3:
-        pipeline_summary.append(execute_step_3(curated_csv))
-    elif choice == 4:
-        pipeline_summary.append(execute_step_4())
-
-    # Print and export summary table
-    print_pipeline_summary_table(pipeline_summary)
-
-    # Export execution log dataframe
-    export_records = []
-    for row in pipeline_summary:
-        file_list = row["Output_Files"]
-        file_str = "; ".join(file_list) if isinstance(file_list, list) else str(file_list)
-        export_records.append({
-            "Step": row["Step"],
-            "Input_File": row["Input_File"],
-            "Output_Files": file_str,
-            "Runtime_sec": row["Runtime_sec"],
-            "Key_Metric": row["Key_Metric"]
-        })
-    
-    # Save log (appending if file exists, or creating fresh)
-    pd.DataFrame(export_records).to_csv(pipeline_summary_path, index=False)
-    print(f"\nSaved execution summary log: {pipeline_summary_path}\n")
+    while True:
+        print("\n" + "=" * 70)
+        print("   VDR CHEMICAL SPACE PROFILING: MASTER ORCHESTRATOR")
+        print("=" * 70)
+        print("  [1] Original dataset")
+        print("  [2] ML generation")
+        print("  [0] Exit")
+        
+        choice = input("\nEnter choice [0-2]: ").strip()
+        
+        if choice == "1":
+            menu_original_dataset(raw_csv, curated_csv, curated_sdf, pipeline_summary_path)
+        elif choice == "2":
+            menu_ml_generation(pipeline_summary_path)
+        elif choice == "0":
+            print("\nExiting orchestrator...")
+            sys.exit(0)
+        else:
+            print("[Warning] Invalid selection.")
 
 
 if __name__ == "__main__":
