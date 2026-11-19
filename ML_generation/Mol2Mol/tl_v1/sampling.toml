@@ -1,0 +1,14 @@
+run_type = "sampling"
+device = "cuda:0"
+json_out_config = "ML_generation/Mol2Mol/tl_v1/_sampling_resolved.json"
+
+[parameters]
+model_file = "ML_generation/Mol2Mol/tl_v1/vdr_mol2mol.model"
+smiles_file = "ML_generation/Mol2Mol/tl_v1/vdr_test_seeds.smi"
+output_file = "data/generated_csv/mol2mol_tl_v1.csv"
+
+num_smiles = 15
+sample_strategy = "multinomial"
+temperature = 1.0
+unique_molecules = true
+randomize_smiles = true

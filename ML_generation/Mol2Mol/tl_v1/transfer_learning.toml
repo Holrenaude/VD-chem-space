@@ -1,0 +1,20 @@
+run_type = "transfer_learning"
+device = "cuda:0"
+tb_logdir = "ML_generation/Mol2Mol/tl_v1/tb_tl"
+json_out_config = "ML_generation/Mol2Mol/tl_v1/_tl_resolved.json"
+
+[parameters]
+num_epochs = 15
+save_every_n_epochs = 5
+batch_size = 32
+num_refs = 50
+sample_batch_size = 128
+
+input_model_file = "ML_generation/Mol2Mol/priors/mol2mol_high_similarity.prior"
+output_model_file = "ML_generation/Mol2Mol/tl_v1/vdr_mol2mol.model"
+smiles_file = "ML_generation/Mol2Mol/tl_v1/vdr_train_pairs.smi"
+validation_smiles_file = "ML_generation/Mol2Mol/tl_v1/vdr_val_pairs.smi"
+standardize_smiles = true
+randomize_smiles = true
+randomize_all_smiles = false
+internal_diversity = true

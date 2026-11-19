@@ -4,6 +4,6 @@ device = "cuda:0"
 [parameters]
 model_file = "ML_generation/reinvent4/tl_v1/vdr_focused.prior"
 output_file = "data/generated_csv/reinvent4_tl_v1.csv"
-num_smiles = 1000
+num_smiles = 10000
 unique_molecules = true
 randomize_smiles = true

@@ -1,0 +1,29 @@
+{
+    "run_type": "sampling",
+    "device": "cuda:0",
+    "tb_logdir": null,
+    "json_out_config": "ML_generation/Mol2Mol/tl_v1/_sampling_resolved.json",
+    "seed": null,
+    "parameters": {
+        "model_file": "ML_generation/Mol2Mol/tl_v1/vdr_mol2mol.model",
+        "num_smiles": 15,
+        "smiles_file": "ML_generation/Mol2Mol/tl_v1/vdr_test_seeds.smi",
+        "target_smiles_path": "",
+        "sample_strategy": "multinomial",
+        "output_file": "data/generated_csv/mol2mol_tl_v1.csv",
+        "target_nll_file": "target_nll.csv",
+        "unique_molecules": true,
+        "randomize_smiles": true,
+        "isomeric_smiles": false,
+        "temperature": 1.0
+    },
+    "scoring": null,
+    "scheduler": null,
+    "responder": null,
+    "filter": null,
+    "stage": null,
+    "learning_strategy": null,
+    "diversity_filter": null,
+    "intrinsic_penalty": null,
+    "inception": null
+}

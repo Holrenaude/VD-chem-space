@@ -2,37 +2,37 @@
   VALIDATION & REDISCOVERY BENCHMARK REPORT: REINVENT4_TL_v1
 ======================================================================
   Generated CSV                 : data/generated_csv/reinvent4_tl_v1.csv
-  Total Sampled                 : 980
-  Valid & Unique (2D)           : 980
+  Total Sampled                 : 9161
+  Valid & Unique (2D)           : 9161
   Validity (%)                  : 100.0%
   Uniqueness (%)                : 100.0%
-  Novelty (%)                   : 98.27%
-  Internal Diversity            : 0.838
-  Mean NN Tanimoto to VDR       : 0.423
+  Novelty (%)                   : 98.95%
+  Internal Diversity            : 0.814
+  Mean NN Tanimoto to VDR       : 0.496
 ----------------------------------------------------------------------
   SCAFFOLD, REGENERATION & REDISCOVERY METRICS
 ----------------------------------------------------------------------
-  Unique Murcko Scaffolds       : 539
-  Novel Murcko Scaffolds        : 523
-  Train Set Recall (%)          : 5.21%
-  Held-Out Test Hits (2D)       : 0 / 85
-  Exact Regeneration 2D (%)     : 0.0%
+  Unique Murcko Scaffolds       : 4141
+  Novel Murcko Scaffolds        : 4065
+  Train Set Recall (%)          : 10.72%
+  Held-Out Test Hits (2D)       : 2 / 221
+  Exact Regeneration 2D (%)     : 0.9%
   Exact Regen Stereo (%)        : 0.0%
-  GuacaMol Rediscovery Score    : 0.559
-  Secosteroid Regen 2D (%)      : 0.0%  (0/37)
-  Aromatic Non-Seco Regen (%)   : 0.0%  (0/48)
-  Analogue Recovery (>=0.70)    : 24.71%
-  Analogue Recovery (>=0.85)    : 0.0%
-  Top-100 / Top-500 Ref Hits    : 13 / 17
+  GuacaMol Rediscovery Score    : 0.6602
+  Secosteroid Regen 2D (%)      : 2.11%  (2/95)
+  Aromatic Non-Seco Regen (%)   : 0.0%  (0/126)
+  Analogue Recovery (>=0.70)    : 42.53%
+  Analogue Recovery (>=0.85)    : 4.07%
+  Top-100 / Top-500 Ref Hits    : 21 / 53
 ----------------------------------------------------------------------
   MEDICINAL CHEMISTRY & AROMATICITY ALIGNMENT
 ----------------------------------------------------------------------
-  Alert-Free (PAINS/Brenk/NIH)  : 44.39%  (Ref VDR: 52.8%)
-  PAINS-Free Pass Rate          : 99.08%
-  Brenk-Free Pass Rate          : 45.41%
-  Molecules w/ Aromatic Bonds   : 27.04%  (Ref VDR: 27.74%)
-  Mean Aromatic Bonds / Mol     : 2.82  (Ref VDR: 3.51)
+  Alert-Free (PAINS/Brenk/NIH)  : 39.36%  (Ref VDR: 42.44%)
+  PAINS-Free Pass Rate          : 99.36%
+  Brenk-Free Pass Rate          : 40.55%
+  Molecules w/ Aromatic Bonds   : 31.11%  (Ref VDR: 31.97%)
+  Mean Aromatic Bonds / Mol     : 3.17  (Ref VDR: 3.53)
 ----------------------------------------------------------------------
   Diagnostic Plot               : data/figures/reinvent4_tl_v1_validation.png
-  Rediscovered Hits CSV         : None
+  Rediscovered Hits CSV         : data/reports/reinvent4_tl_v1_rediscovered_hits.csv
 ======================================================================

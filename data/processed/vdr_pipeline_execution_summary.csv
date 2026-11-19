@@ -19,3 +19,14 @@ ML: REINVENT4 Validation,data/generated_csv/reinvent4_tl_v1.csv,data/processed/m
 ML: REINVENT4 Validation,data/generated_csv/reinvent4_tl_v1.csv,data/processed/ml_generation_benchmarks.csv; data/reports/reinvent4_tl_v1_validation.txt; data/figures/reinvent4_tl_v1_validation.png,7.18,Regen: N/A% | GuacaMol: N/A | AlertFree: 47.97%
 ML: REINVENT4 Generation,Prior Model + Configs,data/generated_csv/reinvent4_tl_v1.csv,13.8,Sampling Executed
 ML: REINVENT4 Validation,data/generated_csv/reinvent4_tl_v1.csv,data/processed/ml_generation_benchmarks.csv; data/reports/reinvent4_tl_v1_validation.txt; data/figures/reinvent4_tl_v1_validation.png,7.27,Regen: 0.0% | GuacaMol: 0.559 | AlertFree: 44.39%
+Step 1: Curation,data/raw/VDR.csv,vdr_curated_library.csv; vdr_curated_library.sdf,1.8,668 Unique Compounds
+Step 2: Physicochemical,data/processed/vdr_curated_library.csv,vdr_descriptors_full.csv; vdr_descriptors_filtered.csv; vdr_druglikeness_np.csv,11.25,125 Retained Features
+Step 3: Fingerprints & Clusters,data/processed/vdr_curated_library.csv,vdr_fingerprint_evaluation.csv; vdr_fingerprint_redundancy.csv; vdr_butina_clusters.csv; vdr_cluster_stability.csv; vdr_scaffold_assignments.csv; vdr_scaffold_summary.csv,29.09,12 FP Panel Evaluated
+Step 4: Chemical Space,Processed Data (Steps 1-3),vdr_chemical_space_coordinates.csv; vdr_pca_variance.csv; vdr_descriptor_spearman_matrix.csv; vdr_kruskal_wallis_results.csv; dunn_posthoc_matrices/*.csv; data/figures/*.png,8.89,PCA/t-SNE/UMAP + Stats
+Step 3: Fingerprints & Clusters,data/processed/vdr_curated_library.csv,vdr_fingerprint_evaluation.csv; vdr_fingerprint_redundancy.csv; vdr_butina_clusters.csv; vdr_cluster_stability.csv; vdr_scaffold_assignments.csv; vdr_scaffold_summary.csv,137.75,12 FP Panel Evaluated
+Step 4: Chemical Space,Processed Data (Steps 1-3),vdr_chemical_space_coordinates.csv; vdr_pca_variance.csv; vdr_descriptor_spearman_matrix.csv; vdr_kruskal_wallis_results.csv; dunn_posthoc_matrices/*.csv; data/figures/*.png,14.19,PCA/t-SNE/UMAP + Stats
+ML: REINVENT4 Generation,Prior Model + Configs,data/generated_csv/reinvent4_tl_v1.csv,20.37,Sampling Executed
+ML: REINVENT4 Validation,data/generated_csv/reinvent4_tl_v1.csv,data/processed/ml_generation_benchmarks.csv; data/reports/reinvent4_tl_v1_validation.txt; data/figures/reinvent4_tl_v1_validation.png,50.93,Regen: 0.9% | GuacaMol: 0.6602 | AlertFree: 39.36%
+ML: Scaffold Train/Test Split,data/processed/vdr_curated_library.csv,data/processed/vdr_train.smi; data/processed/vdr_test_holdout.smi,0.76,80/20 Murcko Scaffold Split (Seed=42)
+ML: Mol2Mol Generation,Prior Model + Configs,data/generated_csv/mol2mol_tl_v1.csv,257.24,Sampling Executed
+ML: Mol2Mol Validation,data/generated_csv/mol2mol_tl_v1.csv,data/processed/ml_generation_benchmarks.csv; data/reports/mol2mol_tl_v1_validation.txt; data/figures/mol2mol_tl_v1_validation.png,12.45,Regen: 43.44% | GuacaMol: 0.8785 | AlertFree: 44.79%

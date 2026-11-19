@@ -1,0 +1,38 @@
+======================================================================
+  VALIDATION & REDISCOVERY BENCHMARK REPORT: Mol2Mol_TL_v1
+======================================================================
+  Generated CSV                 : data/generated_csv/mol2mol_tl_v1.csv
+  Total Sampled                 : 1408
+  Valid & Unique (2D)           : 1237
+  Validity (%)                  : 100.0%
+  Uniqueness (%)                : 87.86%
+  Novelty (%)                   : 72.68%
+  Internal Diversity            : 0.741
+  Mean NN Tanimoto to VDR       : 0.832
+----------------------------------------------------------------------
+  SCAFFOLD, REGENERATION & REDISCOVERY METRICS
+----------------------------------------------------------------------
+  Unique Murcko Scaffolds       : 360
+  Novel Murcko Scaffolds        : 213
+  Train Set Recall (%)          : 27.59%
+  Held-Out Test Hits (2D)       : 96 / 221
+  Exact Regeneration 2D (%)     : 43.44%
+  Exact Regen Stereo (%)        : 40.72%
+  GuacaMol Rediscovery Score    : 0.8785
+  Secosteroid Regen 2D (%)      : 33.68%  (32/95)
+  Aromatic Non-Seco Regen (%)   : 50.79%  (64/126)
+  Analogue Recovery (>=0.70)    : 89.59%
+  Analogue Recovery (>=0.85)    : 58.82%
+  Top-100 / Top-500 Ref Hits    : 64 / 225
+----------------------------------------------------------------------
+  MEDICINAL CHEMISTRY & AROMATICITY ALIGNMENT
+----------------------------------------------------------------------
+  Alert-Free (PAINS/Brenk/NIH)  : 44.79%  (Ref VDR: 42.44%)
+  PAINS-Free Pass Rate          : 99.19%
+  Brenk-Free Pass Rate          : 47.45%
+  Molecules w/ Aromatic Bonds   : 43.33%  (Ref VDR: 31.97%)
+  Mean Aromatic Bonds / Mol     : 5.16  (Ref VDR: 3.53)
+----------------------------------------------------------------------
+  Diagnostic Plot               : data/figures/mol2mol_tl_v1_validation.png
+  Rediscovered Hits CSV         : data/reports/mol2mol_tl_v1_rediscovered_hits.csv
+======================================================================

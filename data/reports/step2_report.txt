@@ -1,19 +1,19 @@
 =======================================================
         STEP 2 PHYSICOCHEMICAL PROFILING AUDIT
 =======================================================
-Total Compounds Processed:       568
+Total Compounds Processed:       1549
 Carborane / Boron Analogues:     0
 Initial RDKit Descriptors:       434
 Stage 1 Dropped (Uncomputable):  0
-Stage 2 Dropped (Low Variance):  84
-Stage 3 Dropped (Collinear |r|>0.9): 225
-Retained Informative Descriptors:125
-Lipinski Rule Pass Rate:         15.8%
-Veber Criteria Pass Rate:        87.1%
-Mean QED Score:                  0.432
-Mean NP-Likeness Score:          1.841
+Stage 2 Dropped (Low Variance):  42
+Stage 3 Dropped (Collinear |r|>0.9): 243
+Retained Informative Descriptors:149
+Lipinski Rule Pass Rate:         15.3%
+Veber Criteria Pass Rate:        86.2%
+Mean QED Score:                  0.411
+Mean NP-Likeness Score:          1.754
 -------------------------------------------------------
-Completely Alert-Free:           53.0%
-PAINS-Free Pass Rate:            99.6%
-Brenk-Free Pass Rate:            53.0%
+Completely Alert-Free:           43.8%
+PAINS-Free Pass Rate:            99.5%
+Brenk-Free Pass Rate:            45.4%
 =======================================================

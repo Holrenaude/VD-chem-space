@@ -7,9 +7,42 @@ fingerprint representations and bootstrap resamples.
 from typing import Dict, List, Tuple, Any, Optional
 import pandas as pd
 import numpy as np
+from joblib import Parallel, delayed
 from rdkit import DataStructs
 from rdkit.ML.Cluster import Butina
 from sklearn.metrics import adjusted_rand_score
+
+
+def _fast_butina_from_adj(adj: np.ndarray) -> np.ndarray:
+    """
+    Vectorized Taylor-Butina clustering from an (N, N) boolean adjacency matrix.
+    Matches RDKit Butina.ClusterData greedy neighbor-count order and returns
+    1-indexed integer cluster labels of shape (N,).
+    """
+    n = adj.shape[0]
+    if n == 0:
+        return np.empty(0, dtype=np.int32)
+
+    work_adj = adj.copy()
+    np.fill_diagonal(work_adj, True)
+
+    neighbor_counts = work_adj.sum(axis=1)
+    # Stable descending sort by neighbor count
+    order = np.argsort(-neighbor_counts, kind="stable")
+
+    unassigned = np.ones(n, dtype=bool)
+    labels = np.zeros(n, dtype=np.int32)
+    cluster_id = 1
+
+    for idx in order:
+        if not unassigned[idx]:
+            continue
+        members = np.where(work_adj[idx] & unassigned)[0]
+        labels[members] = cluster_id
+        unassigned[members] = False
+        cluster_id += 1
+
+    return labels
 
 
 class ButinaClusterer:
@@ -27,9 +60,22 @@ class ButinaClusterer:
         dists = []
         for i in range(1, n):
             sims = DataStructs.BulkTanimotoSimilarity(fp_list[i], fp_list[:i])
-            for s in sims:
-                dists.append(1.0 - float(s))
+            dists.extend((1.0 - np.asarray(sims, dtype=np.float64)).tolist())
         return dists
+
+    @staticmethod
+    def compute_distance_matrix(fp_list: List[Any]) -> np.ndarray:
+        """
+        Computes a symmetric (N, N) float32 Tanimoto distance matrix once.
+        """
+        n = len(fp_list)
+        dist_mat = np.zeros((n, n), dtype=np.float32)
+        for i in range(1, n):
+            sims = np.asarray(DataStructs.BulkTanimotoSimilarity(fp_list[i], fp_list[:i]), dtype=np.float32)
+            d = 1.0 - sims
+            dist_mat[i, :i] = d
+            dist_mat[:i, i] = d
+        return dist_mat
 
     @classmethod
     def cluster_fingerprints(
@@ -57,19 +103,23 @@ class ButinaClusterer:
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
         Clusters a dataset dictionary for a given fingerprint type across multiple
-        distance cutoffs.
+        distance cutoffs (computes the pairwise distance vector ONCE across all cutoffs).
         """
         if cutoffs is None:
             cutoffs = [0.2, 0.3, 0.4, 0.5]
 
         cmpd_ids = list(dataset_fps.keys())
         fp_list = [dataset_fps[cid][fp_name] for cid in cmpd_ids]
+        n = len(fp_list)
+
+        # Precompute lower-triangular distances once for all cutoffs
+        dists = cls.compute_distance_vector(fp_list) if n > 0 else []
 
         summary_records = []
         mapping_df = pd.DataFrame({"compound_id": cmpd_ids})
 
         for cutoff in cutoffs:
-            clusters = cls.cluster_fingerprints(fp_list, dist_cutoff=cutoff)
+            clusters = Butina.ClusterData(dists, n, cutoff, isDistData=True) if n > 0 else ()
             num_clusters = len(clusters)
             singletons = sum(1 for c in clusters if len(c) == 1)
             largest_cluster = max((len(c) for c in clusters), default=0)
@@ -142,36 +192,31 @@ class ClusterStabilityAnalyzer:
     ) -> Tuple[float, float]:
         """
         Evaluates Butina cluster stability under bootstrap resampling.
-        Returns (mean_ARI, std_ARI) comparing full dataset clustering against resampled subsets.
+        Precomputes the (N, N) boolean neighbor adjacency matrix once and runs
+        all bootstrap resamples in parallel using NumPy matrix slicing.
+        Returns (mean_ARI, std_ARI).
         """
         n = len(fp_list)
         if n < 5:
             return 1.0, 0.0
 
-        dists = ButinaClusterer.compute_distance_vector(fp_list)
-        full_clusters = Butina.ClusterData(dists, n, dist_cutoff, isDistData=True)
+        # 1. Compute full N x N distance matrix ONCE and build boolean adjacency matrix
+        dist_mat = ButinaClusterer.compute_distance_matrix(fp_list)
+        adj = dist_mat < dist_cutoff
+        full_labels = _fast_butina_from_adj(adj)
 
-        full_labels = np.zeros(n, dtype=int)
-        for cluster_idx, cluster_tuple in enumerate(full_clusters, start=1):
-            for idx in cluster_tuple:
-                full_labels[idx] = cluster_idx
-
-        ari_scores = []
+        # 2. Pre-generate deterministic bootstrap index arrays matching original RNG sequence
         rng = np.random.RandomState(random_state)
+        resample_indices = [rng.choice(n, size=n, replace=True) for _ in range(n_bootstraps)]
 
-        for _ in range(n_bootstraps):
-            resample_idx = rng.choice(n, size=n, replace=True)
-            resampled_fps = [fp_list[i] for i in resample_idx]
+        # 3. Run bootstrap clustering and ARI scoring in parallel across all CPU cores
+        def _run_one_bootstrap(resample_idx: np.ndarray) -> float:
+            sub_adj = adj[np.ix_(resample_idx, resample_idx)]
+            res_labels = _fast_butina_from_adj(sub_adj)
+            return float(adjusted_rand_score(full_labels[resample_idx], res_labels))
 
-            res_dists = ButinaClusterer.compute_distance_vector(resampled_fps)
-            res_clusters = Butina.ClusterData(res_dists, n, dist_cutoff, isDistData=True)
-
-            res_labels = np.zeros(n, dtype=int)
-            for cluster_idx, cluster_tuple in enumerate(res_clusters, start=1):
-                for idx in cluster_tuple:
-                    res_labels[idx] = cluster_idx
-
-            ari = adjusted_rand_score(full_labels[resample_idx], res_labels)
-            ari_scores.append(ari)
+        ari_scores = Parallel(n_jobs=-1)(
+            delayed(_run_one_bootstrap)(idx) for idx in resample_indices
+        )
 
         return round(float(np.mean(ari_scores)), 4), round(float(np.std(ari_scores)), 4)
